@@ -1,0 +1,261 @@
+---
+title: "Highcharts and Billboarder Template"
+subtitle: "--Javascript in R--"
+date: "Last compiled on `r format(Sys.time(), '%d %B, %Y')`"
+author: 
+  - name: George N. Mwangi
+    email: mwangigeorge648@gmail.com
+    affiliation: '[GitHub Profile](https://github.com/mwangi-george)'
+output: 
+    rmdformats::readthedown:
+      df_print: paged
+      number_sections: true
+      code_folding: hide    
+      toc_float: true
+      keep_md: true
+editor_options: 
+  chunk_output_type: inline
+---
+```{r}
+# setup
+pacman::p_load(highcharter, dplyr, tidyr, forcats, timetk, billboarder, data.table, DT)
+pokemon <- pokemon
+```
+
+# Bar charts
+
+```{r}
+pokemon%>%
+  count(type_1)%>%
+  arrange(n)%>%
+  hchart(type = "bar", hcaes(x = fct_reorder(type_1, n, .desc = T), y = n)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = F, borderWidth = 2) %>%
+  hc_title(text="Bar Plot",align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+# Histograms
+
+```{r}
+hchart(density(pokemon$weight), type = 'area', name = 'Weight', color = '#669900') %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Histogram", align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+# Column Charts
+
+```{r}
+pokemon%>%
+  count(type_1)%>%
+  arrange(n)%>%
+  hchart(type = "column", hcaes(x = fct_reorder(type_1, n, .desc = F), y = n)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Column Chart",align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+```{r}
+bike_sharing_daily %>% 
+  group_by(month = mnth) %>% 
+  summarise(count = sum(cnt)) %>% 
+  hchart(type = "column", hcaes(x = month, y = count)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Column Chart",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+# Time series Plot
+```{r}
+m4_daily %>% 
+  filter(id %in% c("D160", "D500")) %>%
+  group_by(id) %>% 
+  hchart(type = "line", hcaes(x = date, y = value, group = id)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Time Plot",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+```{r}
+bike_sharing_daily %>% 
+  hchart(type = "line", hcaes(x = dteday, y = cnt)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Time Plot",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+# Area Plot
+```{r}
+m4_daily %>% 
+  filter(id == "D10") %>% 
+  hchart(type = "area", hcaes(x = date, y = value)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Area Plot",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+# Tree Maps
+```{r}
+pokemon%>%
+  count(type_1)%>%
+  arrange(n)%>%
+  hchart(type = "treemap", hcaes(x = type_1, value = n, color = n)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Tree Map",align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+```{r}
+tm <- pokemon %>%
+  mutate(type_2 = ifelse(is.na(type_2), paste("only", type_1), type_2),
+         type_1 = type_1) %>%
+  group_by(type_1, type_2) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  ungroup() %>%
+  treemap::treemap(index = c("type_1", "type_2"),
+                   vSize = "n", vColor = "type_1")
+```
+
+
+# Scatter Plots
+
+```{r}
+highchart()%>%
+  hc_add_series(pokemon, "scatter", hcaes(x = log10(height), y = log10(weight))) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Scatter Plot",align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+# Donurt Chats
+```{r}
+# Prepare data
+pokemon %>% 
+  drop_na(egg_group_1) %>% 
+  count(egg_group_1, sort = T) %>% 
+  top_n(n = 5, wt = n) -> df
+  
+# pie chart
+billboarder() %>% 
+  bb_piechart(data = df) %>% 
+  bb_legend(position = 'right') %>% 
+  bb_title(text = "Donurt Chart") %>% 
+  bb_export(download_label = "Download")
+
+# donurt Chart
+billboarder() %>% 
+  bb_donutchart(data = df) %>% 
+  bb_legend(position = 'right') %>% 
+  bb_title(text = "Donurt Chart") %>% 
+  bb_export(download_label = "Download")
+```
+
+```{r eval=FALSE}
+# Explicit mapping
+billboarder() %>% 
+  bb_piechart(data = df, bbaes(egg_group_1, n)) %>% 
+  bb_title(text = "Donurt Chart") %>% 
+  bb_export(download_label = "Download")
+
+# Other way to specify mapping
+billboarder(data = df) %>% 
+  bb_aes(egg_group_1, n) %>% 
+  bb_donutchart() %>% 
+  bb_title(text = "Donurt Chart") %>% 
+  bb_export(download_label = "Download")
+
+
+```
+
+
+# Data Tables
+```{r}
+
+weight_breaks = quantile(pokemon$weight, probs = seq(.05, .95, .05), na.rm = TRUE)
+height_breaks = quantile(pokemon$height, probs = seq(.05, .95, .05), na.rm = TRUE)
+
+weight_cols = viridis::magma(length(weight_breaks) + 1, begin = 0.5, direction = -1)
+height_cols = viridis::magma(length(height_breaks) + 1, begin = 0.5, direction = -1)
+
+
+
+pokemon %>% 
+  select(1:5, -species_id) %>% 
+  datatable(
+    rownames = FALSE, class = 'compact stripe',
+    caption = "Data Tables",
+    options = list(
+      pageLength = 10,
+      dom = "Bfrt", buttons = c("excel", "pdf"),
+            initComplete = JS(
+              "function(settings, json) {",
+              "$(this.api().table().header()).css({'background-color': 'white', 'color': 'red'});",
+              "}")
+      )
+    ) %>%
+  formatStyle('weight', backgroundColor = styleInterval(weight_breaks, weight_cols)) %>% 
+  formatStyle('height', backgroundColor = styleInterval(height_breaks, height_cols))
+```
+
+
+
+# Gauges
+```{r}
+billboarder() %>% 
+  bb_gaugechart(value = 95, name = "Excellent Performance") %>% 
+  bb_export(download_label = "Download") %>% 
+  bb_title(text = "Gauge")
+
+billboarder() %>% 
+  bb_gaugechart(value = 55, name = "Fair Performance") %>% 
+  bb_export(download_label = "Download") %>% 
+  bb_title(text = "Gauge")
+
+billboarder() %>% 
+  bb_gaugechart(value = 15, name = "Poor Performance") %>% 
+  bb_export(download_label = "Download") %>% 
+  bb_title(text = "Gauge")
+```
