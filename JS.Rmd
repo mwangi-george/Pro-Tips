@@ -1,0 +1,169 @@
+---
+title: "Data Viz With JS in R"
+runtime: shiny
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+# setup
+pacman::p_load(flexdashboard, highcharter, dplyr, tidyr, forcats, timetk, billboarder, data.table, DT)
+pokemon <- pokemon
+# Prepare data
+pokemon %>% 
+  drop_na(egg_group_1) %>% 
+  count(egg_group_1, sort = T) %>% 
+  top_n(n = 5, wt = n) -> df
+```
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+pokemon%>%
+  count(type_1)%>%
+  arrange(n)%>%
+  hchart(type = "bar", hcaes(x = fct_reorder(type_1, n, .desc = T), y = n)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = F, borderWidth = 2) %>%
+  hc_title(text="Bar Plot",align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+### Chart B
+
+```{r}
+bike_sharing_daily %>% 
+  group_by(month = mnth) %>% 
+  summarise(count = sum(cnt)) %>% 
+  hchart(type = "column", hcaes(x = month, y = count)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Column Chart",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+### Column Charts
+
+```{r}
+pokemon%>%
+  count(type_1)%>%
+  arrange(n)%>%
+  hchart(type = "column", hcaes(x = fct_reorder(type_1, n, .desc = F), y = n)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Column Chart",align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+Column {data-width=300}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+hchart(density(pokemon$weight), type = 'area', name = 'Weight', color = '#669900') %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Histogram", align="center") %>%
+  hc_subtitle(text="Data Source: highcharts library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+### Chart C
+
+```{r}
+m4_daily %>% 
+  filter(id %in% c("D160", "D500")) %>%
+  group_by(id) %>% 
+  hchart(type = "line", hcaes(x = date, y = value, group = id)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Time Plot",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+### Area Plot
+```{r}
+m4_daily %>% 
+  filter(id == "D10") %>% 
+  hchart(type = "area", hcaes(x = date, y = value)) %>% 
+  hc_exporting(enabled = TRUE) %>% 
+  hc_tooltip(crosshairs = TRUE, backgroundColor = "#FCFFC5",
+             shared = TRUE, borderWidth = 2) %>%
+  hc_title(text="Area Plot",align="center") %>%
+  hc_subtitle(text="Data Source: timetk library",align="center") %>%
+  hc_add_theme(hc_theme_economist()) %>% 
+  hc_chart(zoomType = "x")
+```
+
+
+Column {data-width=150}
+-----------------------------------------------------------------------
+
+### Chart D
+```{r}
+# pie chart
+billboarder() %>% 
+  bb_piechart(data = df) %>% 
+  bb_legend(position = 'right') %>% 
+  bb_title(text = "Donurt Chart") %>% 
+  bb_export(download_label = "Download")
+```
+
+### Chart E
+```{r}
+# donurt Chart
+billboarder() %>% 
+  bb_donutchart(data = df) %>% 
+  bb_legend(position = 'right') %>% 
+  bb_title(text = "Donurt Chart") %>% 
+  bb_export(download_label = "Download")
+```
+
+
+Column {data-width=150}
+-----------------------------------------------------------------------
+
+### Chart D
+```{r}
+billboarder() %>% 
+  bb_gaugechart(value = 95, name = "Excellent Performance") %>% 
+  bb_export(download_label = "Download") %>% 
+  bb_title(text = "Gauge")
+```
+
+### Chart E
+```{r}
+billboarder() %>% 
+  bb_gaugechart(value = 55, name = "Fair Performance") %>% 
+  bb_export(download_label = "Download") %>% 
+  bb_title(text = "Gauge")
+```
+
+### Chart F
+```{r}
+billboarder() %>% 
+  bb_gaugechart(value = 15, name = "Poor Performance") %>% 
+  bb_export(download_label = "Download") %>% 
+  bb_title(text = "Gauge")
+```
+
