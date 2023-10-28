@@ -258,4 +258,15 @@ billboarder() %>%
   bb_gaugechart(value = 15, name = "Poor Performance") %>% 
   bb_export(download_label = "Download") %>% 
   bb_title(text = "Gauge")
+
+billboarder() %>%
+  bb_gaugechart(
+    value = c(45, 30, 25),
+    name = c("A", "B", "C"),
+    color = c("steelblue", "firebrick", "lightsalmon")
+  ) %>% 
+  bb_gauge(max = 100) %>% 
+  bb_data(
+    labels = list(colors = "#FFF")
+  )
 ```
